@@ -1,0 +1,11 @@
+# Fichiers à ignorer par git
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+.DS_Store
+Thumbs.db
+metadata_simple.json
+metadata_backup.json
+.env
