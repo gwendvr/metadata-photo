@@ -26,7 +26,7 @@ class SimplePhotoMetadata:
         """
         self.photo_directory = Path(photo_directory)
         self.metadata_file = self.photo_directory / "metadata_simple.json"
-        self.supported_formats = {'.jpg', '.jpeg', '.tiff', '.tif'}
+        self.supported_formats = {'.jpg', '.jpeg', '.tiff', '.tif', '.heic'}
         
     def get_decimal_from_dms(self, dms, ref):
         """
@@ -79,12 +79,9 @@ class SimplePhotoMetadata:
             try:
                 import platform
                 if platform.system() == "Windows":
-                    # Sur Windows, utiliser la vraie date de création
                     import ctypes
                     from ctypes import wintypes
                     import os
-                    
-                    # Ouvrir le fichier pour lire les informations
                     kernel32 = ctypes.windll.kernel32
                     handle = kernel32.CreateFileW(
                         str(image_path),
@@ -95,16 +92,13 @@ class SimplePhotoMetadata:
                         0,           # Normal attributes
                         None         # No template
                     )
-                    
-                    if handle != -1:  # INVALID_HANDLE_VALUE
+                    if handle != -1:
                         class FILETIME(ctypes.Structure):
                             _fields_ = [("dwLowDateTime", wintypes.DWORD),
                                       ("dwHighDateTime", wintypes.DWORD)]
-                        
                         creation_time = FILETIME()
                         access_time = FILETIME()
                         write_time = FILETIME()
-                        
                         success = kernel32.GetFileTime(
                             handle,
                             ctypes.byref(creation_time),
@@ -112,38 +106,62 @@ class SimplePhotoMetadata:
                             ctypes.byref(write_time)
                         )
                         kernel32.CloseHandle(handle)
-                        
                         if success:
-                            # Convertir FILETIME en timestamp Python
                             timestamp_100ns = (creation_time.dwHighDateTime << 32) + creation_time.dwLowDateTime
                             epoch_as_filetime = 116444736000000000
                             timestamp = (timestamp_100ns - epoch_as_filetime) / 10000000.0
-                            
-                            from datetime import datetime
                             creation_datetime = datetime.fromtimestamp(timestamp)
                             metadata['date_creation'] = creation_datetime.strftime("%d/%m/%Y")
                             metadata['heure_creation'] = creation_datetime.strftime("%H:%M:%S")
-                            
                             print(f"📅 Date création fichier: {metadata['date_creation']} {metadata['heure_creation']}")
                 else:
-                    # Sur autres systèmes, utiliser stat
                     stat_info = image_path.stat()
-                    # Utiliser st_birthtime si disponible (macOS), sinon st_ctime
                     if hasattr(stat_info, 'st_birthtime'):
                         creation_time = stat_info.st_birthtime
                     else:
                         creation_time = stat_info.st_ctime
-                    
-                    from datetime import datetime
                     creation_datetime = datetime.fromtimestamp(creation_time)
                     metadata['date_creation'] = creation_datetime.strftime("%d/%m/%Y")
                     metadata['heure_creation'] = creation_datetime.strftime("%H:%M:%S")
-                    
             except Exception as e:
                 print(f"⚠️ Erreur lecture date création fichier pour {image_path.name}: {e}")
-            
+
             # Extraire les données EXIF (en complément)
-            exif_dict = piexif.load(str(image_path))
+            exif_dict = None
+            if image_path.suffix.lower() == '.heic':
+                # Extraction EXIF pour HEIC
+                try:
+                    import pyheif
+                    import exifread
+                    heif_file = pyheif.read(str(image_path))
+                    # Les métadonnées EXIF sont dans heif_file.metadata
+                    exif_bytes = None
+                    for meta in heif_file.metadata:
+                        if meta['type'] == 'Exif':
+                            exif_bytes = meta['data']
+                            break
+                    if exif_bytes:
+                        import io
+                        tags = exifread.process_file(io.BytesIO(exif_bytes), details=False)
+                        # On va chercher DateTimeOriginal ou DateTime
+                        date_exif = None
+                        if 'EXIF DateTimeOriginal' in tags:
+                            date_exif = str(tags['EXIF DateTimeOriginal'])
+                        elif 'Image DateTime' in tags:
+                            date_exif = str(tags['Image DateTime'])
+                        if date_exif:
+                            try:
+                                dt = datetime.strptime(date_exif, "%Y:%m:%d %H:%M:%S")
+                                metadata['date_creation'] = dt.strftime("%d/%m/%Y")
+                                metadata['heure_creation'] = dt.strftime("%H:%M:%S")
+                                print(f"📷 Date EXIF HEIC utilisée: {metadata['date_creation']} {metadata['heure_creation']}")
+                            except Exception as e:
+                                print(f"⚠️ Erreur conversion date EXIF HEIC: {e}")
+                except Exception as e:
+                    print(f"⚠️ Erreur lecture EXIF HEIC pour {image_path.name}: {e}")
+                exif_dict = {}  # Pour ne pas casser la suite
+            else:
+                exif_dict = piexif.load(str(image_path))
             
             # 📅 DATE ET HEURE EXIF (si pas de date fichier système)
             if not metadata['date_creation']:
