@@ -168,6 +168,28 @@ class SimplePhotoMetadata:
                         metadata['date_creation'] = date_creation
                         metadata['heure_creation'] = date_creation
             
+            # 📅 FORCER L'UTILISATION DE LA DATE EXIF DE PRISE DE VUE
+            # Cette section remplace la date du système par celle des EXIF si disponible
+            date_exif = None
+            
+            # Essayer d'abord DateTimeOriginal (date de prise de vue)
+            if "Exif" in exif_dict and piexif.ExifIFD.DateTimeOriginal in exif_dict["Exif"]:
+                date_exif = exif_dict["Exif"][piexif.ExifIFD.DateTimeOriginal].decode('utf-8')
+            
+            # Sinon, essayer DateTime (date de modification)
+            elif "0th" in exif_dict and piexif.ImageIFD.DateTime in exif_dict["0th"]:
+                date_exif = exif_dict["0th"][piexif.ImageIFD.DateTime].decode('utf-8')
+            
+            if date_exif:
+                # Format: "2020:09:12 14:30:25"
+                try:
+                    dt = datetime.strptime(date_exif, "%Y:%m:%d %H:%M:%S")
+                    metadata['date_creation'] = dt.strftime("%d/%m/%Y")
+                    metadata['heure_creation'] = dt.strftime("%H:%M:%S")
+                    print(f"📷 Date EXIF de prise de vue utilisée: {metadata['date_creation']} {metadata['heure_creation']}")
+                except Exception as e:
+                    print(f"⚠️ Erreur conversion date EXIF: {e}")
+            
             # 🌍 LOCALISATION GPS
             if "GPS" in exif_dict:
                 gps_data = exif_dict["GPS"]
