@@ -1,32 +1,45 @@
 @echo off
-echo 📸 Extracteur Simple - Donnez juste le dossier!
-echo ===============================================
+REM Utilitaire: wrapper pour lancer extract_simple.py
+REM -> utilise le `python` disponible dans le PATH (évite les chemins codés en dur)
+
+REM Essayer d'utiliser une page de code UTF-8 pour améliorer l'affichage (optionnel)
+chcp 65001 >nul
+
+echo Extracteur Simple - Donnez juste le dossier!
+echo ============================================
 echo.
-set /p dossier="📁 Dossier des photos: "
+set /p dossier="Dossier des photos: "
 
 if "%dossier%"=="" (
-    echo ❌ Aucun dossier spécifié.
+    echo Aucun dossier spécifie.
     pause
-    exit
+    exit /b 1
 )
 
-REM Supprimer les guillemets
+REM Supprimer les guillemets si présent
 set dossier=%dossier:"=%
 
 if not exist "%dossier%" (
-    echo ❌ Dossier introuvable: %dossier%
+    echo Dossier introuvable: %dossier%
     pause
-    exit
+    exit /b 1
 )
 
 echo.
-echo 🚀 Extraction en cours...
+echo Extraction en cours...
 echo.
 
-cd /d "C:\Users\gwend\Documents\phototri"
-C:/Users/gwend/AppData/Local/Programs/Python/Python312/python.exe extract_simple.py "%dossier%"
+REM Lancer le script Python depuis le répertoire du script (ne pas se baser sur un cd fixe)
+pushd "%~dp0"
+python extract_simple.py "%dossier%"
+set rc=%ERRORLEVEL%
+popd
 
 echo.
-echo ✅ Terminé! Fichier créé: %dossier%\metadata_simple.json
+if exist "%dossier%\metadata_simple.json" (
+    echo Terminé! Fichier crée: %dossier%\metadata_simple.json
+) else (
+    echo Script termine (code retour %rc%). Verifiez la sortie pour d'eventuelles erreurs.
+)
 echo.
 pause
