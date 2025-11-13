@@ -14,5 +14,5 @@ if %rc%==0 (
 ) else (
 	echo Script termine avec code %rc%.
 )
-echo Appuyez sur une touche pour fermer cette fenetre...
-pause > nul
+echo.
+pause

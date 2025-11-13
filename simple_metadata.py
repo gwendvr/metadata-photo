@@ -123,7 +123,7 @@ class SimplePhotoMetadata:
                     creation_datetime = datetime.fromtimestamp(creation_time)
                     metadata['date_creation'] = creation_datetime.strftime("%d/%m/%Y")
                     metadata['heure_creation'] = creation_datetime.strftime("%H:%M:%S")
-                except Exception as e:
+            except Exception as e:
                 print(f"Erreur lecture date creation fichier pour {image_path.name}: {e}")
 
             # Extraire les données EXIF (en complément)

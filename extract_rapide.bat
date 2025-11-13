@@ -31,15 +31,20 @@ echo.
 
 REM Lancer le script Python depuis le répertoire du script (ne pas se baser sur un cd fixe)
 pushd "%~dp0"
-python extract_simple.py "%dossier%"
+python extract_simple.py "%dossier%" 2>&1
 set rc=%ERRORLEVEL%
 popd
 
 echo.
+echo ========================================
 if exist "%dossier%\metadata_simple.json" (
-    echo Terminé! Fichier crée: %dossier%\metadata_simple.json
+    echo SUCCES! Fichier cree: %dossier%\metadata_simple.json
 ) else (
-    echo Script termine (code retour %rc%). Verifiez la sortie pour d'eventuelles erreurs.
+    echo ATTENTION: Fichier metadata_simple.json non trouve!
+    echo Code retour: %rc%
+    echo Verifiez les erreurs ci-dessus.
 )
+echo ========================================
 echo.
-pause
+echo Appuyez sur une touche pour fermer cette fenetre...
+pause >nul
