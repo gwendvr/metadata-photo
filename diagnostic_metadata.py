@@ -12,10 +12,10 @@ import json
 
 def test_single_photo(photo_path):
     """Teste l'extraction sur une seule photo."""
-    print(f"🔍 Test d'extraction sur: {photo_path}")
+    print(f"Test d'extraction sur: {photo_path}")
     
     if not os.path.exists(photo_path):
-        print(f"❌ Fichier non trouvé: {photo_path}")
+        print(f"Fichier non trouvé: {photo_path}")
         return
     
     # Créer un gestionnaire temporaire
@@ -25,7 +25,7 @@ def test_single_photo(photo_path):
     # Extraire les métadonnées de cette photo
     metadata = manager.extract_simple_metadata(Path(photo_path))
     
-    print(f"\n📊 RÉSULTATS D'EXTRACTION:")
+    print(f"\nRÉSULTATS D'EXTRACTION:")
     print("=" * 50)
     for key, value in metadata.items():
         if key == 'raw_exif':
@@ -34,19 +34,19 @@ def test_single_photo(photo_path):
             print(f"   {key}: {value}")
     
     # Tester la sauvegarde et le rechargement
-    print(f"\n💾 Test de sauvegarde/rechargement...")
+    print(f"\nTest de sauvegarde/rechargement...")
     temp_metadata = {str(photo_path): metadata}
     
     # Sauvegarder
     manager.save_metadata(temp_metadata)
-    print(f"✅ Sauvegardé dans: {manager.metadata_file}")
+    print(f"Sauvegardé dans: {manager.metadata_file}")
     
     # Recharger
     reloaded = manager.load_metadata()
     if reloaded:
-        print(f"✅ Rechargé avec succès")
+        print(f"Rechargé avec succès")
         reloaded_data = reloaded.get(str(photo_path), {})
-        print(f"\n📥 DONNÉES RECHARGÉES:")
+        print(f"\nDONNÉES RECHARGÉES:")
         print("-" * 30)
         for key, value in reloaded_data.items():
             if key == 'raw_exif':
@@ -54,12 +54,12 @@ def test_single_photo(photo_path):
             else:
                 print(f"   {key}: {value}")
     else:
-        print(f"❌ Erreur lors du rechargement")
+        print(f"Erreur lors du rechargement")
 
 
 def main():
     """Fonction principale."""
-    print("🔧 DIAGNOSTIC D'EXTRACTION DE MÉTADONNÉES")
+    print("DIAGNOSTIC D'EXTRACTION DE MÉTADONNÉES")
     print("=" * 50)
     
     if len(sys.argv) > 1:
@@ -68,7 +68,7 @@ def main():
         photo_path = input("📁 Chemin vers une photo de test: ").strip()
     
     if not photo_path:
-        print("❌ Aucun fichier spécifié.")
+        print("Aucun fichier spécifié.")
         return
     
     test_single_photo(photo_path)

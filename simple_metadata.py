@@ -75,7 +75,7 @@ class SimplePhotoMetadata:
         }
         
         try:
-            # 📅 DATE DE CRÉATION DU FICHIER SYSTÈME (priorité)
+            # DATE DE CREATION DU FICHIER SYSTEME (priorite)
             try:
                 import platform
                 if platform.system() == "Windows":
@@ -113,7 +113,7 @@ class SimplePhotoMetadata:
                             creation_datetime = datetime.fromtimestamp(timestamp)
                             metadata['date_creation'] = creation_datetime.strftime("%d/%m/%Y")
                             metadata['heure_creation'] = creation_datetime.strftime("%H:%M:%S")
-                            print(f"📅 Date création fichier: {metadata['date_creation']} {metadata['heure_creation']}")
+                            print(f"Date creation fichier: {metadata['date_creation']} {metadata['heure_creation']}")
                 else:
                     stat_info = image_path.stat()
                     if hasattr(stat_info, 'st_birthtime'):
@@ -123,8 +123,8 @@ class SimplePhotoMetadata:
                     creation_datetime = datetime.fromtimestamp(creation_time)
                     metadata['date_creation'] = creation_datetime.strftime("%d/%m/%Y")
                     metadata['heure_creation'] = creation_datetime.strftime("%H:%M:%S")
-            except Exception as e:
-                print(f"⚠️ Erreur lecture date création fichier pour {image_path.name}: {e}")
+                except Exception as e:
+                print(f"Erreur lecture date creation fichier pour {image_path.name}: {e}")
 
             # Extraire les données EXIF (en complément)
             exif_dict = None
@@ -154,16 +154,16 @@ class SimplePhotoMetadata:
                                 dt = datetime.strptime(date_exif, "%Y:%m:%d %H:%M:%S")
                                 metadata['date_creation'] = dt.strftime("%d/%m/%Y")
                                 metadata['heure_creation'] = dt.strftime("%H:%M:%S")
-                                print(f"📷 Date EXIF HEIC utilisée: {metadata['date_creation']} {metadata['heure_creation']}")
+                                print(f"Date EXIF HEIC utilisee: {metadata['date_creation']} {metadata['heure_creation']}")
                             except Exception as e:
-                                print(f"⚠️ Erreur conversion date EXIF HEIC: {e}")
+                                print(f"Erreur conversion date EXIF HEIC: {e}")
                 except Exception as e:
-                    print(f"⚠️ Erreur lecture EXIF HEIC pour {image_path.name}: {e}")
+                    print(f"Erreur lecture EXIF HEIC pour {image_path.name}: {e}")
                 exif_dict = {}  # Pour ne pas casser la suite
             else:
                 exif_dict = piexif.load(str(image_path))
             
-            # 📅 DATE ET HEURE EXIF (si pas de date fichier système)
+            # DATE ET HEURE EXIF (si pas de date fichier systeme)
             if not metadata['date_creation']:
                 date_creation = None
                 
@@ -181,12 +181,12 @@ class SimplePhotoMetadata:
                         dt = datetime.strptime(date_creation, "%Y:%m:%d %H:%M:%S")
                         metadata['date_creation'] = dt.strftime("%d/%m/%Y")
                         metadata['heure_creation'] = dt.strftime("%H:%M:%S")
-                        print(f"📷 Date EXIF utilisée: {metadata['date_creation']} {metadata['heure_creation']}")
+                        print(f"Date EXIF utilisee: {metadata['date_creation']} {metadata['heure_creation']}")
                     except:
                         metadata['date_creation'] = date_creation
                         metadata['heure_creation'] = date_creation
             
-            # 📅 FORCER L'UTILISATION DE LA DATE EXIF DE PRISE DE VUE
+            # FORCER L'UTILISATION DE LA DATE EXIF DE PRISE DE VUE
             # Cette section remplace la date du système par celle des EXIF si disponible
             date_exif = None
             
@@ -204,11 +204,11 @@ class SimplePhotoMetadata:
                     dt = datetime.strptime(date_exif, "%Y:%m:%d %H:%M:%S")
                     metadata['date_creation'] = dt.strftime("%d/%m/%Y")
                     metadata['heure_creation'] = dt.strftime("%H:%M:%S")
-                    print(f"📷 Date EXIF de prise de vue utilisée: {metadata['date_creation']} {metadata['heure_creation']}")
+                    print(f"Date EXIF de prise de vue utilisee: {metadata['date_creation']} {metadata['heure_creation']}")
                 except Exception as e:
-                    print(f"⚠️ Erreur conversion date EXIF: {e}")
+                    print(f"Erreur conversion date EXIF: {e}")
             
-            # 🌍 LOCALISATION GPS
+            # LOCALISATION GPS
             if "GPS" in exif_dict:
                 gps_data = exif_dict["GPS"]
                 
@@ -243,11 +243,11 @@ class SimplePhotoMetadata:
         """
         all_metadata = {}
         
-        print(f"🔍 Scan du dossier: {self.photo_directory}")
+        print(f"Scan du dossier: {self.photo_directory}")
         
         for file_path in self.photo_directory.rglob('*'):
             if file_path.is_file() and file_path.suffix.lower() in self.supported_formats:
-                print(f"📸 Traitement de: {file_path.name}")
+                print(f"Traitement de: {file_path.name}")
                 metadata = self.extract_simple_metadata(file_path)
                 all_metadata[str(file_path)] = metadata
         
@@ -284,7 +284,7 @@ class SimplePhotoMetadata:
         with open(self.metadata_file, 'w', encoding='utf-8') as f:
             json.dump(save_data, f, indent=2, ensure_ascii=False)
         
-        print(f"💾 Métadonnées sauvegardées: {self.metadata_file}")
+        print(f"Metadonnees sauvegardees: {self.metadata_file}")
     
     def display_summary(self, metadata_dict):
         """
@@ -294,42 +294,42 @@ class SimplePhotoMetadata:
             metadata_dict (dict): Dictionnaire des métadonnées
         """
         print("\n" + "="*60)
-        print("📊 RÉSUMÉ DES MÉTADONNÉES EXTRAITES")
+        print("RESUME DES METADONNEES EXTRAITES")
         print("="*60)
         
         total_photos = len(metadata_dict)
         photos_avec_gps = 0
         photos_avec_date = 0
         
-        print(f"📸 Total des photos: {total_photos}")
-        print("\n📋 DÉTAILS PAR PHOTO:")
+        print(f"Total des photos: {total_photos}")
+        print("\nDETAILS PAR PHOTO:")
         print("-" * 60)
         
         for metadata in metadata_dict.values():
             nom = metadata['nom']
-            date = metadata['date_creation'] or "❌ Non trouvée"
-            heure = metadata['heure_creation'] or "❌ Non trouvée"
+            date = metadata['date_creation'] or "Non trouvee"
+            heure = metadata['heure_creation'] or "Non trouvee"
             
             if metadata['gps_latitude'] and metadata['gps_longitude']:
-                gps_info = f"✅ GPS: {metadata['gps_latitude']:.4f}, {metadata['gps_longitude']:.4f}"
+                gps_info = f"GPS: {metadata['gps_latitude']:.4f}, {metadata['gps_longitude']:.4f}"
                 photos_avec_gps += 1
             else:
-                gps_info = "❌ Pas de GPS"
+                gps_info = "Pas de GPS"
             
             if metadata['date_creation']:
                 photos_avec_date += 1
             
-            print(f"📷 {nom}")
-            print(f"   📅 Date: {date} à {heure}")
-            print(f"   🌍 {gps_info}")
+            print(f"{nom}")
+            print(f"   Date: {date} a {heure}")
+            print(f"   {gps_info}")
             if metadata.get('localisation'):
-                print(f"   🔗 Carte: {metadata['localisation']}")
+                print(f"   Carte: {metadata['localisation']}")
             print()
         
         print("-" * 60)
-        print(f"📊 STATISTIQUES:")
-        print(f"   • Photos avec date: {photos_avec_date}/{total_photos}")
-        print(f"   • Photos avec GPS: {photos_avec_gps}/{total_photos}")
+        print(f"STATISTIQUES:")
+        print(f"   - Photos avec date: {photos_avec_date}/{total_photos}")
+        print(f"   - Photos avec GPS: {photos_avec_gps}/{total_photos}")
         print("=" * 60)
     
     def load_metadata(self):
@@ -340,7 +340,7 @@ class SimplePhotoMetadata:
             dict: Dictionnaire des métadonnées
         """
         if not self.metadata_file.exists():
-            print(f"❌ Fichier de métadonnées non trouvé: {self.metadata_file}")
+            print(f"Fichier de metadonnees non trouve: {self.metadata_file}")
             return {}
         
         with open(self.metadata_file, 'r', encoding='utf-8') as f:
@@ -377,10 +377,10 @@ class SimplePhotoMetadata:
         metadata_dict = self.load_metadata()
         
         if not metadata_dict:
-            print("❌ Aucune métadonnée à restaurer.")
+            print("Aucune metadonnees a restaurer.")
             return
         
-        print(f"🔄 Restauration des métadonnées...")
+        print(f"Restauration des metadonnees...")
         
         for original_path, metadata in metadata_dict.items():
             original_filename = Path(original_path).name
@@ -389,7 +389,7 @@ class SimplePhotoMetadata:
             target_files = list(target_directory.rglob(original_filename))
             
             if not target_files:
-                print(f"❌ Fichier non trouvé: {original_filename}")
+                print(f"Fichier non trouve: {original_filename}")
                 continue
             
             target_file = target_files[0]
@@ -413,7 +413,7 @@ class SimplePhotoMetadata:
                         day, month, year = date_str.split('/')
                         exif_datetime = f"{year}:{month.zfill(2)}:{day.zfill(2)} {time_str}"
                         
-                        print(f"🕐 Restauration date: {exif_datetime} pour {target_file.name}")
+                        print(f"Restauration date: {exif_datetime} pour {target_file.name}")
                         
                         # Mettre à jour les champs de date EXIF
                         current_exif["Exif"][piexif.ExifIFD.DateTimeOriginal] = exif_datetime.encode('utf-8')
@@ -421,7 +421,7 @@ class SimplePhotoMetadata:
                         current_exif["0th"][piexif.ImageIFD.DateTime] = exif_datetime.encode('utf-8')
                         
                     except Exception as e:
-                        print(f"⚠️ Erreur conversion date pour {target_file.name}: {e}")
+                        print(f"Erreur conversion date pour {target_file.name}: {e}")
                 
                 # Restaurer le GPS si disponible
                 if metadata.get('gps_latitude') is not None and metadata.get('gps_longitude') is not None:
@@ -448,12 +448,12 @@ class SimplePhotoMetadata:
                         current_exif["GPS"][piexif.GPSIFD.GPSLongitude] = lon_dms
                         current_exif["GPS"][piexif.GPSIFD.GPSLongitudeRef] = lon_ref.encode('utf-8')
                         
-                        print(f"🌍 Restauration GPS: {lat}, {lon} pour {target_file.name}")
+                        print(f"Restauration GPS: {lat}, {lon} pour {target_file.name}")
                         
                     except Exception as e:
-                        print(f"⚠️ Erreur conversion GPS pour {target_file.name}: {e}")
+                        print(f"Erreur conversion GPS pour {target_file.name}: {e}")
                 
-                # Appliquer les métadonnées mises à jour
+                # Appliquer les metadonnees mises a jour
                 exif_bytes = piexif.dump(current_exif)
                 piexif.insert(exif_bytes, str(target_file))
                 
@@ -521,91 +521,91 @@ class SimplePhotoMetadata:
                                     kernel32.CloseHandle(handle)
                                     
                                     if success:
-                                        print(f"📅 Date création Windows mise à jour: {new_datetime.strftime('%d/%m/%Y %H:%M:%S')} pour {target_file.name}")
-                                        print(f"   (Date de modification préservée)")
+                                        print(f"Date creation Windows mise a jour: {new_datetime.strftime('%d/%m/%Y %H:%M:%S')} pour {target_file.name}")
+                                        print(f"   (Date de modification preservee)")
                                     else:
-                                        print(f"⚠️ Échec modification date création Windows pour {target_file.name}")
+                                        print(f"Echec modification date creation Windows pour {target_file.name}")
                                 else:
-                                    print(f"⚠️ Impossible d'ouvrir le fichier pour modification date création: {target_file.name}")
+                                    print(f"Impossible d'ouvrir le fichier pour modification date creation: {target_file.name}")
                             else:
                                 # Sur autres systèmes, on ne peut modifier que l'accès/modification
-                                print(f"⚠️ Modification date création non supportée sur {platform.system()}")
-                                print(f"   (Seules les dates d'accès/modification peuvent être modifiées)")
+                                print(f"Modification date creation non supportee sur {platform.system()}")
+                                print(f"   (Seules les dates d'acces/modification peuvent etre modifiees)")
                                 
                         except Exception as e:
-                            print(f"⚠️ Erreur modification date création pour {target_file.name}: {e}")
+                            print(f"Erreur modification date creation pour {target_file.name}: {e}")
                         
                     except Exception as e:
-                        print(f"⚠️ Erreur modification date fichier pour {target_file.name}: {e}")
+                        print(f"Erreur modification date fichier pour {target_file.name}: {e}")
                 
-                print(f"✅ Restauré: {target_file.name}")
+                print(f"Restauré: {target_file.name}")
                     
             except Exception as e:
-                print(f"❌ Erreur restauration {target_file.name}: {e}")
+                print(f"Erreur restauration {target_file.name}: {e}")
 
 
 def main():
     """Fonction principale."""
-    print("📸 Extracteur Simple de Métadonnées de Photos")
+    print("Extracteur Simple de Metadonnees de Photos")
     print("=" * 45)
-    print("🎯 Extrait : Nom, Date/Heure, GPS")
+    print("Extrait : Nom, Date/Heure, GPS")
     print()
     
     # Demander le dossier des photos
-    photo_dir = input("📁 Dossier des photos (ou Entrée pour dossier courant): ").strip()
+    photo_dir = input("Dossier des photos (ou Entree pour dossier courant): ").strip()
     
     if not photo_dir:
         photo_dir = "."
     
     if not os.path.exists(photo_dir):
-        print(f"❌ Le dossier {photo_dir} n'existe pas.")
+        print(f"Le dossier {photo_dir} n'existe pas.")
         return
     
     manager = SimplePhotoMetadata(photo_dir)
     
     while True:
-        print("\n📋 OPTIONS:")
-        print("1. 📸 Extraire les métadonnées")
-        print("2. 📊 Voir le résumé")
-        print("3. 🔄 Restaurer les métadonnées")
-        print("4. ❌ Quitter")
+        print("\nOPTIONS:")
+        print("1. Extraire les metadonnees")
+        print("2. Voir le resume")
+        print("3. Restaurer les metadonnees")
+        print("4. Quitter")
         
         choice = input("\nChoix (1-4): ").strip()
         
         if choice == "1":
-            print("\n🔍 Extraction en cours...")
+            print("\nExtraction en cours...")
             metadata = manager.scan_directory()
             
             if metadata:
                 manager.save_metadata(metadata)
                 manager.display_summary(metadata)
             else:
-                print("❌ Aucune photo trouvée.")
+                print("Aucune photo trouvee.")
         
         elif choice == "2":
             metadata = manager.load_metadata()
             if metadata:
                 manager.display_summary(metadata)
             else:
-                print("❌ Aucune métadonnée sauvegardée.")
+                print("Aucune metadonnees sauvegardee.")
         
         elif choice == "3":
-            target_dir = input("📁 Dossier cible (ou Entrée pour dossier original): ").strip()
+            target_dir = input("Dossier cible (ou Entree pour dossier original): ").strip()
             
             if not target_dir:
                 target_dir = None
             elif not os.path.exists(target_dir):
-                print(f"❌ Le dossier {target_dir} n'existe pas.")
+                print(f"Le dossier {target_dir} n'existe pas.")
                 continue
             
             manager.restore_metadata(target_dir)
         
         elif choice == "4":
-            print("\n👋 Au revoir!")
+            print("\nAu revoir!")
             break
         
         else:
-            print("❌ Option invalide.")
+            print("Option invalide.")
 
 
 if __name__ == "__main__":
